@@ -1,0 +1,157 @@
+---
+title: "Main study analyses and plots"
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
+
+```{r setup, include=FALSE}
+want.packages <- c("tidyverse", "psych", "haven")
+have.packages   <- want.packages %in% rownames(installed.packages())
+if(any(!have.packages)) install.packages(want.packages[!have.packages])
+
+library(tidyverse)
+library(psych)
+library(haven)
+
+theme_set(
+    theme_classic(base_size = 14)
+)
+```
+
+```{r load datasets, echo = FALSE}
+df0 <- read_sav("Experimental pilot.sav") %>% zap_labels() %>% filter(manip_fail == 0) 
+df0 <- df0 %>% mutate(Condition = as.factor(ifelse(df0$Condition == 1, "Neutral", "Disease")))
+  
+df1 <- read_sav("Study 1.sav") %>% zap_labels() %>% filter(manip_fail == 0) 
+df1 <- df1 %>% mutate(Condition = as.factor(ifelse(df1$Condition == -1, "Neutral", "Disease")))
+
+df2 <- read_sav("Study 2.sav") %>% zap_labels() %>% filter(manip_failinc == 0)
+df2 <- df2 %>% mutate(Cond = as.factor(ifelse(df2$Cond == -1, "Accident", "Disease")))
+df2$Cond <- factor(df2$Cond, levels = c("Disease", "Accident"))
+
+df3 <- read_sav("Study 3.sav") %>% zap_labels() %>% filter(manip_fail == 0 & problem == 0)
+df3 <- df3 %>% mutate(Condition = as.factor(ifelse(df3$Condition == -1, "Accident", "Disease")))
+df3$Condition <- factor(df3$Condition, levels = c("Disease", "Accident"))
+
+df4 <- read_sav("Study 4.sav") %>% zap_label() %>% filter(manip_fail1 == 0 & manip_fail2 == 0)
+df4 <- df4 %>% mutate(Condition = as.factor(ifelse(df4$COND == -1, "Gunman", "Disease")))
+df4$Condition <- factor(df4$Condition, levels = c("Disease", "Gunman"))
+
+df5 <- read_sav("Study 5.sav") %>% zap_labels() %>% filter(manip_fail == 0 & problem == 0)
+df5 <- df5 %>% mutate(Condition = as.factor(ifelse(df5$Condition == -1, "Tornado", "Disease")))
+df5$Condition <- factor(df5$Condition, levels = c("Disease", "Tornado"))
+```
+
+```{r pilot analyses, echo = FALSE}
+contrasts(df0$Condition) <- c(1, -1)
+summary(model0 <- lm(percep~Condition*GA_C, df0))
+confint(model0)
+```
+
+
+```{r pilot crowding, echo = FALSE}
+plot0 <- ggplot(data = df0, aes(x = GA_C, y = percep, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Crowding", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+plot0
+
+```
+```{r Study 1 analyses, echo = FALSE}
+contrasts(df1$Condition) <- c(1, -1)
+
+summary(model1.1 <- lm(CrowdT~Condition*GermAv_C, df1))
+confint(model1.1)
+summary(model1.2 <- lm(Affect~Condition*GermAv_C, df1))
+confint(model1.2)
+```
+
+
+```{r Study 1 crowding, echo = FALSE}
+plot1.1 <- ggplot(data = df1, aes(x = GermAv_C, y = CrowdT, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Crowding", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+plot1.1
+```
+
+```{r Study 1 affect, echo = FALSE}
+plot1.2 <- ggplot(data = df1, aes(x = GermAv_C, y = Affect, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Affect", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black"))
+
+plot1.2
+```
+
+```{r Study 2 analyses, echo = FALSE}
+contrasts(df2$Cond) <- c(1, -1)
+
+summary(model2.1 <- lm(Crowd~Cond*GermAv_C, df2))
+confint(model2.1)
+summary(model2.2 <- lm(Affect~Cond*GermAv_C, df2))
+confint(model2.2)
+```
+
+```{r Study 2 crowding, echo = FALSE}
+plot2.1 <- ggplot(data = df2, aes(x = GermAv_C, y = Crowd, group = Cond, color = Cond, linetype = Cond)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Crowding", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2))+ guides(linetype = FALSE)
+plot2.1
+```
+
+```{r Study 2 affect, echo = FALSE}
+plot2.2 <- ggplot(data = df2, aes(x = GermAv_C, y = Affect, group = Cond, color = Cond, linetype = Cond)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Affect", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2))+ guides(linetype = FALSE)
+plot2.2
+```
+
+```{r Study 3 analyses, echo = FALSE}
+contrasts(df3$Condition) <- c(1, -1)
+
+summary(model3.1 <- lm(crowding~Condition*GermAv_C, df3))
+confint(model3.1)
+summary(model3.2 <- lm(Affect~Condition*GermAv_C, df3))
+confint(model3.2)
+```
+
+```{r Study 3 crowding, echo = FALSE}
+plot3.1 <- ggplot(data = df3, aes(x = GermAv_C, y = crowding, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Crowding", color = "Condition") + coord_cartesian(xlim = c(-3, 2)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2))
+plot3.1
+```
+
+```{r Study 3 affect, echo = FALSE}
+plot3.2 <- ggplot(data = df3, aes(x = GermAv_C, y = Affect, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Affect", color = "Condition") + coord_cartesian(xlim = c(-3, 2)) + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2))
+plot3.2
+```
+
+```{r Study 4 analyses, echo = FALSE}
+contrasts(df4$Condition) <- c(1, -1)
+
+summary(model4.1 <- lm(crowdT~Condition*GA_C, df4))
+confint(model4.1)
+summary(model4.2 <- lm(Affect~Condition*GA_C, df4))
+confint(model4.2)
+```
+
+```{r Study 4 crowding, echo = FALSE}
+plot4.1 <- ggplot(data = df4, aes(x = GA_C, y = crowdT, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Crowding", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2)) 
+plot4.1
+```
+
+```{r Study 4 affect, echo = FALSE}
+plot4.2 <- ggplot(data = df4, aes(x = GA_C, y = Affect, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Affect", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2)) 
+plot4.2
+```
+
+```{r Study 5 analyses, echo = FALSE}
+contrasts(df5$Condition) <- c(1, -1)
+
+summary(model5.1 <- lm(crowd_total~Condition*GermAv_C, df5))
+confint(model5.1)
+summary(model5.2 <- lm(Affect~Condition*GermAv_C, df5))
+confint(model5.2)
+```
+
+```{r Study 5 crowding, echo = FALSE}
+plot5.1 <- ggplot(data = df5 %>% filter(is.na(Condition) != TRUE), aes(x = GermAv_C, y = crowd_total, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Crowding", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2))
+plot5.1
+```
+
+
+```{r Study 5 affect, echo = FALSE}
+plot5.2 <- ggplot(data = df5 %>% filter(is.na(Condition) != TRUE), aes(x = GermAv_C, y = Affect, group = Condition, color = Condition, linetype = Condition)) + geom_point(size = 1) + geom_smooth(method = "lm", size = 1.5) + scale_color_grey(start=0, end=.3) + labs(x = "Germ Aversion (centered)", y = "Affect", color = "Condition") + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), panel.background = element_blank(), axis.line = element_line(colour = "black")) + scale_x_continuous(breaks = c(-2, -1, 0, 1, 2))
+plot5.2
+```
+
